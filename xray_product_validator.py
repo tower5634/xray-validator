@@ -36,11 +36,12 @@ if uploaded_file is not None:
 
     # Clean up the revenue and price columns (remove commas, convert to numeric)
     if revenue_col:
-        df[revenue_col] = df[revenue_col].replace({',': ''}, regex=True)  # Remove commas
+        df[revenue_col] = df[revenue_col].replace({',': '', '₹': '', '$': ''}, regex=True)  # Remove commas and currency symbols
         df[revenue_col] = pd.to_numeric(df[revenue_col], errors='coerce')  # Convert to numeric, invalid values become NaN
 
     if price_col:
-        df[price_col] = df[price_col].replace({',': ''}, regex=True)  # Remove commas
+        # Remove all non-numeric characters (commas, currency symbols, etc.)
+        df[price_col] = df[price_col].replace({',': '', '₹': '', '$': ''}, regex=True)  # Remove commas and currency symbols
         df[price_col] = pd.to_numeric(df[price_col], errors='coerce')  # Convert to numeric, invalid values become NaN
 
     st.subheader("Step 1: Success Rate")
@@ -66,7 +67,6 @@ if uploaded_file is not None:
     st.subheader("Step 2: Price & Competition Check")
 
     try:
-        # Ensure that price data is valid and numeric
         if price_col:
             # Check for rows where price might be NaN
             invalid_price_rows = df[df[price_col].isnull()]
