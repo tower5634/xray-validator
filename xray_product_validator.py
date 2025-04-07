@@ -11,6 +11,11 @@ uploaded_file = st.file_uploader("📤 Upload your Xray CSV", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
+    # Normalize the 'Reviews' column so user doesn't have to rename it manually
+for col in df.columns:
+    if "review" in col.lower() and "count" in col.lower():
+        df.rename(columns={col: "Reviews"}, inplace=True)
+        break
 
     try:
         df["Parent Level Revenue"] = df["Parent Level Revenue"].replace('[\$,]', '', regex=True).astype(float)
