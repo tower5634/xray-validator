@@ -34,6 +34,9 @@ if uploaded_file is not None:
             price_col = col
             break
 
+    # Ensure the values in the revenue column are numeric
+    df[revenue_col] = pd.to_numeric(df[revenue_col], errors='coerce')
+
     st.subheader("Step 1: Success Rate")
 
     try:
@@ -53,6 +56,9 @@ if uploaded_file is not None:
     st.subheader("Step 2: Price & Competition Check")
 
     try:
+        # Ensure the price column is numeric
+        df[price_col] = pd.to_numeric(df[price_col], errors='coerce')
+        
         avg_price = round(df[price_col].mean(), 2)
         avg_reviews = round(df["Reviews"].mean(), 0)
 
