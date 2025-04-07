@@ -34,31 +34,39 @@ if uploaded_file is not None:
             price_col = col
             break
 
-    # Ensure the values in the revenue column are numeric
-    df[revenue_col] = pd.to_numeric(df[revenue_col], errors='coerce')
+    # Clean up the revenue and price columns (remove commas, convert to numeric)
+    if revenue_col:
+        df[revenue_col] = df[revenue_col].replace({',': ''}, regex=True)  # Remove commas
+        df[revenue_col] = pd.to_numeric(df[revenue_col], errors='coerce')  # Convert to numeric, invalid values become NaN
+
+    if price_col:
+        df[price_col] = df[price_col].replace({',': ''}, regex=True)  # Remove commas
+        df[price_col] = pd.to_numeric(df[price_col], errors='coerce')  # Convert to numeric, invalid values become NaN
 
     st.subheader("Step 1: Success Rate")
 
     try:
         total_sellers = df.shape[0]
-        sellers_above_10k = df[df[revenue_col] > 10000].shape[0]
-        success_rate = round((sellers_above_10k / total_sellers) * 100, 2)
-
-        st.write(f"✅ Success Rate: **{success_rate}%** ({sellers_above_10k} out of {total_sellers} sellers over $10K revenue)")
-
-        if success_rate >= 75:
-            st.success("🎯 This product has a high success rate!")
+        # Ensure there are valid values in the revenue column before proceeding
+        if df[revenue_col].isnull().sum() == total_sellers:
+            st.error("❌ All revenue values are invalid or missing.")
         else:
-            st.warning("⚠️ This product might not have a high enough success rate.")
+            sellers_above_10k = df[df[revenue_col] > 10000].shape[0]
+            success_rate = round((sellers_above_10k / total_sellers) * 100, 2)
+
+            st.write(f"✅ Success Rate: **{success_rate}%** ({sellers_above_10k} out of {total_sellers} sellers over $10K revenue)")
+
+            if success_rate >= 75:
+                st.success("🎯 This product has a high success rate!")
+            else:
+                st.warning("⚠️ This product might not have a high enough success rate.")
     except Exception as e:
         st.error(f"❌ Error calculating success rate: {e}")
 
     st.subheader("Step 2: Price & Competition Check")
 
     try:
-        # Ensure the price column is numeric
-        df[price_col] = pd.to_numeric(df[price_col], errors='coerce')
-        
+        # Ensure that price data is valid and numeric
         avg_price = round(df[price_col].mean(), 2)
         avg_reviews = round(df["Reviews"].mean(), 0)
 
