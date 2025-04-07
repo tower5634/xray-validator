@@ -16,7 +16,7 @@ if uploaded_file:
         if "review" in col.lower() and "count" in col.lower():
             df.rename(columns={col: "Reviews"}, inplace=True)
             break
-            for col in df.columns:
+        for col in df.columns:
     if "review" in col.lower() and "count" in col.lower():
         df.rename(columns={col: "Reviews"}, inplace=True)
         break
