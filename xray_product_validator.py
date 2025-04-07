@@ -7,11 +7,12 @@ st.set_page_config(page_title="Xray Product Validator", layout="centered")
 st.title("🔍 Helium 10 Xray Product Validator")
 st.markdown("Upload a Helium 10 Xray CSV export to analyze product potential.")
 
-uploaded_file = st.file_uploader("📤 Upload your Xray CSV", type=["csv"])
+uploaded_file = st.file_uploader("Upload your Xray CSV file", type="csv")
 
-if uploaded_file:
+if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-     # ✅ NEW: Auto-rename the Reviews column
+
+    # ✅ NEW: Auto-rename the Reviews column
     for col in df.columns:
         if "review" in col.lower() and "count" in col.lower():
             df.rename(columns={col: "Reviews"}, inplace=True)
