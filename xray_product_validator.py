@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(page_title="Xray Product Validator")
-
 st.title("🔍 Xray Product Validator")
 
 uploaded_file = st.file_uploader("Upload your Xray CSV file", type="csv")
@@ -10,18 +9,34 @@ uploaded_file = st.file_uploader("Upload your Xray CSV file", type="csv")
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
-    # ✅ Auto-rename the Reviews column so the app doesn't break
+    # 🔍 Find the right column for Reviews
     for col in df.columns:
         if "review" in col.lower() and "count" in col.lower():
             df.rename(columns={col: "Reviews"}, inplace=True)
             break
 
+    # 🔍 Find the right column for Revenue
+    revenue_col = None
+    for col in df.columns:
+        if "revenue" in col.lower() and "parent" in col.lower():
+            revenue_col = col
+            break
+    if not revenue_col:
+        for col in df.columns:
+            if "revenue" in col.lower():
+                revenue_col = col
+                break
+
+    # 🔍 Find the right column for Price
+    price_col = None
+    for col in df.columns:
+        if "price" in col.lower():
+            price_col = col
+            break
+
     st.subheader("Step 1: Success Rate")
 
     try:
-        revenue_col = "Parent Revenue"
-        seller_count_col = "Sellers"
-
         total_sellers = df.shape[0]
         sellers_above_10k = df[df[revenue_col] > 10000].shape[0]
         success_rate = round((sellers_above_10k / total_sellers) * 100, 2)
@@ -38,7 +53,7 @@ if uploaded_file is not None:
     st.subheader("Step 2: Price & Competition Check")
 
     try:
-        avg_price = round(df["Price"].mean(), 2)
+        avg_price = round(df[price_col].mean(), 2)
         avg_reviews = round(df["Reviews"].mean(), 0)
 
         st.write(f"💰 Average Price: **${avg_price}**")
