@@ -1,65 +1,57 @@
-
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Xray Product Validator", layout="centered")
+st.set_page_config(page_title="Xray Product Validator")
 
-st.title("🔍 Helium 10 Xray Product Validator")
-st.markdown("Upload a Helium 10 Xray CSV export to analyze product potential.")
+st.title("🔍 Xray Product Validator")
 
 uploaded_file = st.file_uploader("Upload your Xray CSV file", type="csv")
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
-    # ✅ NEW: Auto-rename the Reviews column
+    # ✅ Auto-rename the Reviews column so the app doesn't break
     for col in df.columns:
         if "review" in col.lower() and "count" in col.lower():
             df.rename(columns={col: "Reviews"}, inplace=True)
             break
-        for col in df.columns:
-    if "review" in col.lower() and "count" in col.lower():
-        df.rename(columns={col: "Reviews"}, inplace=True)
-        break
+
+    st.subheader("Step 1: Success Rate")
 
     try:
-        df["Parent Level Revenue"] = df["Parent Level Revenue"].replace('[\$,]', '', regex=True).astype(float)
-        df["Price  $"] = df["Price  $"].replace('[\$,]', '', regex=True).astype(float)
-        df["Reviews"] = pd.to_numeric(df["Reviews"], errors="coerce")
+        revenue_col = "Parent Revenue"
+        seller_count_col = "Sellers"
 
-        total_sellers = len(df)
-        successful_sellers = df[df["Parent Level Revenue"] > 10000]
-        success_rate = round(len(successful_sellers) / total_sellers * 100, 2)
-        avg_price = round(df["Price  $"].mean(), 2)
-        avg_reviews = int(df["Reviews"].mean())
+        total_sellers = df.shape[0]
+        sellers_above_10k = df[df[revenue_col] > 10000].shape[0]
+        success_rate = round((sellers_above_10k / total_sellers) * 100, 2)
 
-        top_keywords = (
-            successful_sellers["Product Details"]
-            .astype(str)
-            .str.lower()
-            .str.split()
-            .explode()
-            .value_counts()
-            .head(10)
-            .to_dict()
-        )
+        st.write(f"✅ Success Rate: **{success_rate}%** ({sellers_above_10k} out of {total_sellers} sellers over $10K revenue)")
 
-        competition = "High" if avg_reviews > 500 or total_sellers > 20 else "Low"
-        decision = "GO ✅" if success_rate >= 75 and avg_price < 100 else "NO GO ❌"
-
-        st.subheader("📊 Analysis Results")
-        st.markdown(f"**Success Rate:** {success_rate}%")
-        st.markdown(f"**Average Price:** ${avg_price}")
-        st.markdown(f"**Total Sellers:** {total_sellers}")
-        st.markdown(f"**Average Reviews:** {avg_reviews}")
-        st.markdown(f"**Competition Level:** {competition}")
-        st.markdown(f"**Final Verdict:** {decision}")
-
-        st.subheader("🔑 Top Variant Keywords")
-        for word, count in top_keywords.items():
-            st.markdown(f"- **{word}**: {count} mentions")
-
-        st.caption("⚠️ This tool is not affiliated with or endorsed by Helium 10. Data is used for personal analysis only.")
-
+        if success_rate >= 75:
+            st.success("🎯 This product has a high success rate!")
+        else:
+            st.warning("⚠️ This product might not have a high enough success rate.")
     except Exception as e:
-        st.error(f"Something went wrong while processing your file: {e}")
+        st.error(f"❌ Error calculating success rate: {e}")
+
+    st.subheader("Step 2: Price & Competition Check")
+
+    try:
+        avg_price = round(df["Price"].mean(), 2)
+        avg_reviews = round(df["Reviews"].mean(), 0)
+
+        st.write(f"💰 Average Price: **${avg_price}**")
+        st.write(f"⭐ Average Reviews: **{avg_reviews}**")
+
+        if avg_price <= 100:
+            st.success("✅ Price is in a good range.")
+        else:
+            st.warning("⚠️ Price might be a bit high.")
+
+        if avg_reviews <= 300:
+            st.success("✅ Competition is manageable.")
+        else:
+            st.info("ℹ️ High review count — might be competitive.")
+    except Exception as e:
+        st.error(f"❌ Error analyzing price or reviews: {e}")
