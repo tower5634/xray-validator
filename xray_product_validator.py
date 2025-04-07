@@ -67,20 +67,35 @@ if uploaded_file is not None:
 
     try:
         # Ensure that price data is valid and numeric
-        avg_price = round(df[price_col].mean(), 2)
-        avg_reviews = round(df["Reviews"].mean(), 0)
+        if price_col:
+            # Check for rows where price might be NaN
+            invalid_price_rows = df[df[price_col].isnull()]
+            if not invalid_price_rows.empty:
+                st.warning(f"⚠️ There are {invalid_price_rows.shape[0]} rows with invalid or missing prices.")
 
-        st.write(f"💰 Average Price: **${avg_price}**")
-        st.write(f"⭐ Average Reviews: **{avg_reviews}**")
-
-        if avg_price <= 100:
-            st.success("✅ Price is in a good range.")
+            avg_price = round(df[price_col].mean(), 2)
         else:
-            st.warning("⚠️ Price might be a bit high.")
+            avg_price = None
 
-        if avg_reviews <= 300:
-            st.success("✅ Competition is manageable.")
+        avg_reviews = round(df["Reviews"].mean(), 0) if "Reviews" in df.columns else None
+
+        if avg_price is not None:
+            st.write(f"💰 Average Price: **${avg_price}**")
+            if avg_price <= 100:
+                st.success("✅ Price is in a good range.")
+            else:
+                st.warning("⚠️ Price might be a bit high.")
         else:
-            st.info("ℹ️ High review count — might be competitive.")
+            st.error("❌ Price data is invalid or missing.")
+
+        if avg_reviews is not None:
+            st.write(f"⭐ Average Reviews: **{avg_reviews}**")
+            if avg_reviews <= 300:
+                st.success("✅ Competition is manageable.")
+            else:
+                st.info("ℹ️ High review count — might be competitive.")
+        else:
+            st.error("❌ Reviews data is invalid or missing.")
+
     except Exception as e:
         st.error(f"❌ Error analyzing price or reviews: {e}")
