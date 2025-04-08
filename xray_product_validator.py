@@ -4,7 +4,7 @@ import pandas as pd
 st.set_page_config(page_title="Xray Product Validator")
 st.title("🔍 Xray Product Validator")
 
-# Add a button for comparing two files
+# Button to enable the comparison mode
 compare_mode = st.button("Compare 2 Products/Files")
 
 # Function to analyze the data for each file
