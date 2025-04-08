@@ -104,3 +104,4 @@ else:
                 st.subheader("📦 Product 2")
                 for key, val in results2.items():
                     st.write(f"**{key}:** {val}")
+
