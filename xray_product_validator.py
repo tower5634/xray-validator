@@ -221,5 +221,7 @@ elif compare_two_files == "Compare 2 Products":
             except Exception as e:
                 st.error(f"❌ Error analyzing price or reviews for {file_label}: {e}")
 
+        # Analyze both products
         analyze_product(df1, "Product 1")
         analyze_product(df2, "Product 2")
+
