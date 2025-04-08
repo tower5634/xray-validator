@@ -5,7 +5,7 @@ import urllib.parse
 st.set_page_config(page_title="Xray Product Validator")
 st.title("🔍 Xray Product Validator")
 
-# Toggle for comparison
+# Toggle for comparison mode
 compare_mode = st.checkbox("Compare 2 Products/Files")
 
 def process_file(uploaded_file):
