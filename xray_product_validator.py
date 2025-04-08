@@ -34,8 +34,6 @@ if uploaded_file is not None:
             price_col = col
             break
 
-    st.subheader("Step 1: Success Rate")
-
     # Clean up the revenue and price columns
     if revenue_col:
         df[revenue_col] = df[revenue_col].replace({',': '', '$': ''}, regex=True)
@@ -67,8 +65,6 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"❌ Error calculating success rate or revenue: {e}")
-
-    st.subheader("Step 2: Price & Competition Check")
 
     try:
         if price_col:
