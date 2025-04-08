@@ -7,6 +7,13 @@ st.title("🔍 Xray Product Validator")
 # Button to enable the comparison mode
 compare_mode = st.button("Compare 2 Products/Files")
 
+# Function to clean and convert the revenue and price columns
+def clean_and_convert_column(df, column):
+    if column:
+        df[column] = df[column].replace({',': '', '$': '', ' ': ''}, regex=True)  # Remove commas, dollar signs, and spaces
+        df[column] = pd.to_numeric(df[column], errors='coerce')  # Convert to numeric, invalid values become NaN
+    return df
+
 # Function to analyze the data for each file
 def analyze_file(uploaded_file):
     result = {}
@@ -39,13 +46,8 @@ def analyze_file(uploaded_file):
                 break
 
         # Clean up the revenue and price columns
-        if revenue_col:
-            df[revenue_col] = df[revenue_col].replace({',': '', '$': ''}, regex=True)
-            df[revenue_col] = pd.to_numeric(df[revenue_col], errors='coerce')
-
-        if price_col:
-            df[price_col] = df[price_col].replace({',': '', '$': ''}, regex=True)
-            df[price_col] = pd.to_numeric(df[price_col], errors='coerce')
+        df = clean_and_convert_column(df, revenue_col)
+        df = clean_and_convert_column(df, price_col)
 
         # Success rate calculations
         try:
