@@ -4,8 +4,10 @@ import pandas as pd
 st.set_page_config(page_title="Xray Product Validator")
 st.title("🔍 Xray Product Validator")
 
-compare_mode = st.checkbox("Compare Two Products Side-by-Side")
+# Add a button for comparing two files
+compare_mode = st.button("Compare 2 Products/Files")
 
+# Function to analyze the data for each file
 def analyze_file(uploaded_file):
     result = {}
     if uploaded_file is not None:
@@ -71,6 +73,7 @@ def analyze_file(uploaded_file):
         }
     return result
 
+# If in compare mode, show file uploaders for 2 products
 if compare_mode:
     col1, col2 = st.columns(2)
     with col1:
@@ -94,6 +97,7 @@ if compare_mode:
                 for key, val in results2.items():
                     st.write(f"**{key}:** {val}")
 else:
+    # Default mode: single file upload
     uploaded_file = st.file_uploader("Upload your Xray CSV file", type="csv")
     if uploaded_file is not None:
         results = analyze_file(uploaded_file)
