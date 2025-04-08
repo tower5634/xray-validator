@@ -98,6 +98,98 @@ def analyze_and_display(df, revenue_col, price_col, label="Product"):
         success_rate = round((sellers_above_10k / total_sellers) * 100, 2)
 
         st.write(f"✅ Success Rate: **{success_rate}%** ({sellers_above_10k} out of {total_sellers} sellers over $10K revenue)")
+import streamlit as st
+import pandas as pd
+import urllib.parse
+import re
+from collections import Counter
+
+st.set_page_config(page_title="Xray Product Validator")
+st.title("🔍 Xray Product Validator")
+
+# Toggle for comparison mode
+compare_mode = st.checkbox("Compare 2 Products/Files")
+
+def clean_product_details(product_details):
+    # Clean up product details, remove special characters and excessive whitespace
+    product_details = re.sub(r'[^a-zA-Z0-9\s]', '', product_details)
+    product_details = re.sub(r'\s+', ' ', product_details).strip()
+    return product_details
+
+def extract_product_name(df):
+    # Find the Product Details column
+    if "Product Details" in df.columns:
+        # Get all product descriptions in the "Product Details" column
+        product_details = df["Product Details"].dropna().astype(str)
+        words = ' '.join(product_details).split()
+
+        # Removing some common short words instead of using stopwords (basic filter)
+        filtered_words = [word.lower() for word in words if len(word) > 2]
+
+        # Find the most common words
+        word_counts = Counter(filtered_words)
+        common_words = word_counts.most_common(5)  # Get the 5 most common words
+
+        # The product name will likely be a combination of the most common and meaningful words
+        product_name = ' '.join([word[0] for word in common_words]).title()
+
+        # Return the cleaned and joined product name
+        return product_name
+    else:
+        return None
+
+def process_file(uploaded_file):
+    df = pd.read_csv(uploaded_file)
+
+    # Rename Reviews column
+    for col in df.columns:
+        if "review" in col.lower() and "count" in col.lower():
+            df.rename(columns={col: "Reviews"}, inplace=True)
+            break
+
+    # Get Revenue column
+    revenue_col = None
+    for col in df.columns:
+        if "revenue" in col.lower() and "parent" in col.lower():
+            revenue_col = col
+            break
+    if not revenue_col:
+        for col in df.columns:
+            if "revenue" in col.lower():
+                revenue_col = col
+                break
+
+    # Get Price column
+    price_col = None
+    for col in df.columns:
+        if "price" in col.lower():
+            price_col = col
+            break
+
+    # Clean up data
+    if revenue_col:
+        df[revenue_col] = df[revenue_col].replace({',': '', '$': ''}, regex=True)
+        df[revenue_col] = pd.to_numeric(df[revenue_col], errors='coerce')
+
+    if price_col:
+        df[price_col] = df[price_col].replace({',': '', '$': ''}, regex=True)
+        df[price_col] = pd.to_numeric(df[price_col], errors='coerce')
+
+    if "Reviews" in df.columns:
+        df["Reviews"] = df["Reviews"].replace({',': ''}, regex=True)
+        df["Reviews"] = pd.to_numeric(df["Reviews"], errors='coerce')
+
+    return df, revenue_col, price_col
+
+def analyze_and_display(df, revenue_col, price_col, label="Product"):
+    st.markdown(f"### 📊 {label} Analysis")
+
+    try:
+        total_sellers = df.shape[0]
+        sellers_above_10k = df[df[revenue_col] > 10000].shape[0]
+        success_rate = round((sellers_above_10k / total_sellers) * 100, 2)
+
+        st.write(f"✅ Success Rate: **{success_rate}%** ({sellers_above_10k} out of {total_sellers} sellers over $10K revenue)")
 
         if success_rate >= 75:
             st.success("🎯 This product has a high success rate!")
