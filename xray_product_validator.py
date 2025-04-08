@@ -38,12 +38,12 @@ if uploaded_file is not None:
 
     # Clean up the revenue and price columns
     if revenue_col:
-        df[revenue_col] = df[revenue_col].replace({',': '', '$': ''}, regex=True)  # Remove commas and currency symbols
-        df[revenue_col] = pd.to_numeric(df[revenue_col], errors='coerce')  # Convert to numeric, invalid values become NaN
+        df[revenue_col] = df[revenue_col].replace({',': '', '$': ''}, regex=True)
+        df[revenue_col] = pd.to_numeric(df[revenue_col], errors='coerce')
 
     if price_col:
-        df[price_col] = df[price_col].replace({',': '', '$': ''}, regex=True)  # Remove commas and currency symbols
-        df[price_col] = pd.to_numeric(df[price_col], errors='coerce')  # Convert to numeric, invalid values become NaN
+        df[price_col] = df[price_col].replace({',': '', '$': ''}, regex=True)
+        df[price_col] = pd.to_numeric(df[price_col], errors='coerce')
 
     try:
         total_sellers = df.shape[0]
@@ -56,8 +56,14 @@ if uploaded_file is not None:
             st.success("🎯 This product has a high success rate!")
         else:
             st.warning("⚠️ This product might not have a high enough success rate.")
+
+        # 📈 Average revenue per seller
+        total_revenue = df[revenue_col].sum()
+        avg_revenue = round(total_revenue / total_sellers, 2)
+        st.write(f"📈 Average Revenue per Seller: **${avg_revenue:,}**")
+
     except Exception as e:
-        st.error(f"❌ Error calculating success rate: {e}")
+        st.error(f"❌ Error calculating success rate or average revenue: {e}")
 
     st.subheader("Step 2: Price & Competition Check")
 
@@ -79,9 +85,12 @@ if uploaded_file is not None:
             st.error("❌ Price data is invalid or missing.")
 
         # Calculate average reviews
-        avg_reviews = round(df["Reviews"].mean(), 0) if "Reviews" in df.columns else None
-        if avg_reviews is not None:
+        if "Reviews" in df.columns:
+            df["Reviews"] = df["Reviews"].replace({',': ''}, regex=True)
+            df["Reviews"] = pd.to_numeric(df["Reviews"], errors='coerce')
+            avg_reviews = round(df["Reviews"].mean(), 0)
             st.write(f"⭐ Average Reviews: **{avg_reviews}**")
+
             if avg_reviews <= 300:
                 st.success("✅ Competition is manageable.")
             else:
