@@ -57,13 +57,16 @@ if uploaded_file is not None:
         else:
             st.warning("⚠️ This product might not have a high enough success rate.")
 
-        # 📈 Average revenue per seller
+        # 📈 Revenue calculations
         total_revenue = df[revenue_col].sum()
         avg_revenue = round(total_revenue / total_sellers, 2)
+
         st.write(f"📈 Average Revenue per Seller: **${avg_revenue:,}**")
+        st.write(f"💵 Total Revenue: **${total_revenue:,.2f}**")
+        st.write(f"👥 # of Sellers: **{total_sellers}**")
 
     except Exception as e:
-        st.error(f"❌ Error calculating success rate or average revenue: {e}")
+        st.error(f"❌ Error calculating success rate or revenue: {e}")
 
     st.subheader("Step 2: Price & Competition Check")
 
