@@ -3,12 +3,20 @@ import pandas as pd
 import urllib.parse
 import re
 from collections import Counter
+from nltk.corpus import stopwords
+
+# Ensure that nltk stopwords are downloaded
+import nltk
+nltk.download('stopwords')
 
 st.set_page_config(page_title="Xray Product Validator")
 st.title("🔍 Xray Product Validator")
 
 # Toggle for comparison mode
 compare_mode = st.checkbox("Compare 2 Products/Files")
+
+# Stopwords for cleaner extraction of product names
+stop_words = set(stopwords.words('english'))
 
 def clean_product_details(product_details):
     # Clean up product details, remove special characters and excessive whitespace
@@ -23,12 +31,17 @@ def extract_product_name(df):
         product_details = df["Product Details"].dropna().astype(str)
         words = ' '.join(product_details).split()
 
+        # Remove stopwords to focus on important words
+        filtered_words = [word.lower() for word in words if word.lower() not in stop_words]
+
         # Find the most common words
-        word_counts = Counter(words)
+        word_counts = Counter(filtered_words)
         common_words = word_counts.most_common(5)  # Get the 5 most common words
 
         # The product name will likely be a combination of the most common and meaningful words
         product_name = ' '.join([word[0] for word in common_words]).title()
+
+        # Return the cleaned and joined product name
         return product_name
     else:
         return None
@@ -100,6 +113,8 @@ def analyze_and_display(df, revenue_col, price_col, label="Product"):
 
     except Exception as e:
         st.error(f"❌ Error calculating success rate or revenue: {e}")
+
+    st.subheader("Price & Competition Check")
 
     try:
         if price_col:
