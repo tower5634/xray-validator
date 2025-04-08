@@ -1,13 +1,16 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Xray Product Validator")
-st.title("🔍 Xray Product Validator")
+st.set_page_config(page_title="Xray Product Validator Comparison")
+st.title("🔍 Xray Product Validator: Compare Two Products")
 
-# Button to enable the comparison mode
-compare_mode = st.button("Compare 2 Products/Files")
+# File uploaders
+col1, col2 = st.columns(2)
+with col1:
+    file1 = st.file_uploader("Upload CSV for Product 1", type="csv", key="file1")
+with col2:
+    file2 = st.file_uploader("Upload CSV for Product 2", type="csv", key="file2")
 
-# Function to analyze the data for each file
 def analyze_file(uploaded_file):
     result = {}
     if uploaded_file is not None:
@@ -65,43 +68,30 @@ def analyze_file(uploaded_file):
 
         result = {
             "Success Rate": f"{success_rate}% ({sellers_above_10k}/{total_sellers})",
-            "Average Revenue per Seller": f"${avg_revenue:,.2f}",
+            "Avg Revenue per Seller": f"${avg_revenue:,.2f}",
             "Total Revenue": f"${total_revenue:,.2f}",
             "# of Sellers": total_sellers,
-            "Average Price": f"${avg_price}" if avg_price is not None else "N/A",
-            "Average Reviews": int(avg_reviews) if avg_reviews is not None else "N/A"
+            "Avg Price": f"${avg_price}" if avg_price is not None else "N/A",
+            "Avg Reviews": int(avg_reviews) if avg_reviews is not None else "N/A"
         }
     return result
 
-# If in compare mode, show file uploaders for 2 products
-if compare_mode:
-    col1, col2 = st.columns(2)
-    with col1:
-        file1 = st.file_uploader("Upload CSV for Product 1", type="csv", key="file1")
-    with col2:
-        file2 = st.file_uploader("Upload CSV for Product 2", type="csv", key="file2")
+# Show results side by side
+if file1 and file2:
+    results1 = analyze_file(file1)
+    results2 = analyze_file(file2)
 
-    if file1 and file2:
-        results1 = analyze_file(file1)
-        results2 = analyze_file(file2)
+    st.markdown("### 📊 Side-by-Side Comparison")
 
-        st.markdown("### 📊 Side-by-Side Comparison")
-        with st.container():
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("📦 Product 1")
-                for key, val in results1.items():
-                    st.write(f"**{key}:** {val}")
-            with col2:
-                st.subheader("📦 Product 2")
-                for key, val in results2.items():
-                    st.write(f"**{key}:** {val}")
-else:
-    # Default mode: single file upload
-    uploaded_file = st.file_uploader("Upload your Xray CSV file", type="csv")
-    if uploaded_file is not None:
-        results = analyze_file(uploaded_file)
-        st.markdown("### ✅ Product Analysis")
-        for key, val in results.items():
-            st.write(f"**{key}:** {val}")
-            
+    with st.container():
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("📦 Product 1")
+            for key, val in results1.items():
+                st.write(f"**{key}:** {val}")
+
+        with col2:
+            st.subheader("📦 Product 2")
+            for key, val in results2.items():
+                st.write(f"**{key}:** {val}")
