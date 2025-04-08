@@ -104,3 +104,4 @@ else:
         st.markdown("### ✅ Product Analysis")
         for key, val in results.items():
             st.write(f"**{key}:** {val}")
+            
